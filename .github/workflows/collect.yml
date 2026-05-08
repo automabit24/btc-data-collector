@@ -1,0 +1,31 @@
+name: BTC Data Collector
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 매일 오전 10시 (한국시간)
+  workflow_dispatch:      # 수동 실행 버튼
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python 설정
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
+        run: pip install pandas requests
+
+      - name: 데이터 수집
+        run: python collect.py
+
+      - name: 데이터 저장
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add BTCUSDT_1m_combined.csv
+          git commit -m "Auto update $(date +'%Y-%m-%d')" || echo "변경없음"
+          git push
